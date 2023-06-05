@@ -1,7 +1,11 @@
 #[macro_use]
 extern crate rocket;
 
-#[get("/world")]
+mod api;
+mod tera;
+use rocket_dyn_templates::Template;
+
+#[get("/")]
 fn index() -> &'static str {
     "Hello, world!";
     "please go to /test"
@@ -12,15 +16,14 @@ fn hello_test() -> &'static str {
     "Hello, test!"
 }
 
-#[get("/<name>")]
-fn hello(name: &str) -> String {
-    format!("Hello, {}!", name)
-}
-
 #[launch]
 fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![index])
         .mount("/", routes![hello_test])
-        .mount("/hello", routes![hello])
+        .mount("/", routes![tera::about])
+        .mount("/index", routes![tera::index])
+        .attach(Template::custom(|engines| {
+            tera::customize(&mut engines.tera);
+        }))
 }
